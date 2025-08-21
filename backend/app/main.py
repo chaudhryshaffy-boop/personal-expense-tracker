@@ -9,6 +9,9 @@ from app.core.config import get_settings
 from app.api import auth as auth_router
 from app.api import transactions as transactions_router
 from app.api import accounts as accounts_router
+from app.api import categories as categories_router
+from app.api import budgets as budgets_router
+from app.api import dashboard as dashboard_router
 
 
 def create_app() -> FastAPI:
@@ -30,6 +33,9 @@ def create_app() -> FastAPI:
     app.include_router(auth_router.router)
     app.include_router(transactions_router.router)
     app.include_router(accounts_router.router)
+    app.include_router(categories_router.router)
+    app.include_router(budgets_router.router)
+    app.include_router(dashboard_router.router)
 
     @app.get("/healthz")
     async def health() -> dict[str, str]:

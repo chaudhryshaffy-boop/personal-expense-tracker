@@ -8,7 +8,7 @@ from sqlalchemy import and_, asc, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.models import Transaction
+from app.models import Transaction, Account
 from app.api.deps import get_current_user
 from app.schemas.transaction import TransactionCreate, TransactionRead
 
@@ -82,6 +82,13 @@ async def create_transaction(payload: TransactionCreate, db: AsyncSession = Depe
         user_id=user.id,
     )
     db.add(tx)
+    # Adjust account balance
+    res = await db.execute(select(Account).where(Account.id == payload.account_id, Account.user_id == user.id))
+    account = res.scalar_one()
+    if payload.type == "income":
+        account.balance = (account.balance or 0) + payload.amount
+    else:
+        account.balance = (account.balance or 0) - payload.amount
     await db.commit()
     await db.refresh(tx)
     return TransactionRead(

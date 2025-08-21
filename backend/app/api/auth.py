@@ -33,6 +33,9 @@ async def register_user(payload: UserCreate, db: AsyncSession = Depends(get_db_s
     # Create a default Cash account for the new user
     default_account = Account(user_id=user.id, name="Cash", type="cash", balance=0, currency=user.currency or "USD")
     db.add(default_account)
+    # Seed default categories
+    from app.services.seed import seed_default_categories
+    await seed_default_categories(db, user.id)
     await db.commit()
     await db.refresh(user)
     return user
@@ -67,4 +70,3 @@ async def refresh_tokens(payload: RefreshRequest):
 @router.get("/me", response_model=UserRead)
 async def get_me(user: User = Depends(get_current_user)):
     return user
-
