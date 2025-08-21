@@ -11,6 +11,7 @@ from app.core.security import create_token, hash_password, verify_password
 from app.core.config import get_settings
 from app.models import User, Account
 from app.schemas.auth import LoginRequest, RefreshRequest, TokenPair
+from app.api.deps import get_current_user
 from app.schemas.user import UserCreate, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -61,4 +62,9 @@ async def refresh_tokens(payload: RefreshRequest):
     access = create_token(str(user_id), "access", settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh = create_token(str(user_id), "refresh", settings.REFRESH_TOKEN_EXPIRE_MINUTES)
     return TokenPair(access_token=access, refresh_token=refresh)
+
+
+@router.get("/me", response_model=UserRead)
+async def get_me(user: User = Depends(get_current_user)):
+    return user
 
